@@ -16,8 +16,29 @@ def score():
 def obstacle_movement(obstacle_list):
     if obstacle_list:
         for obstacle_rect in obstacle_list:
+            obstacle_rect.x -= 5
+            if obstacle_rect.bottom == 320:
+                screen.blit(sugar_surf,obstacle_rect)
+            elif obstacle_rect.bottom == 310:
+                screen.blit(egg_surf,obstacle_rect)
+            elif obstacle_rect.bottom == 300:
+                screen.blit(spoon_surf, obstacle_rect)
+            else:
+                screen.blit(whisk_surf, obstacle_rect)
+        obstacle_list = [obstacle for obstacle in obstacle_list if obstacle.x > -120]
+        return obstacle_list
+    else:
+        return []
 
+def collisions(player, obstacles):
+    if obstacles:
+        for obstacle_rect in obstacles:
+            if player.colliderect(obstacle_rect):
+                return False
+            else:
+                return True
 
+lifes = 3
 
 # Initialize Pygame and create a window
 pygame.init()
@@ -41,14 +62,16 @@ game_font = pygame.font.Font(pygame.font.get_default_font(), 50)
 # Load sprite assets
 player_surf = pygame.image.load("graphics/player/horse1.png.png").convert_alpha()
 player_rect = player_surf.get_rect(bottomleft=(25, GROUND_Y))
-lifes = 3
-egg_surf = pygame.image.load("graphics/egg/baking.png").convert_alpha()
-egg_rect = egg_surf.get_rect(bottomleft=(800, GROUND_Y))
-egg_speed = 5
+sugar_surf = pygame.image.load("graphics/egg/sugar.png").convert_alpha()
+egg_surf = pygame.image.load("graphics/egg/egg.png").convert_alpha()
+spoon_surf = pygame.image.load("graphics/egg/spoon.png").convert_alpha()
+whisk_surf = pygame.image.load("graphics/egg/whisk.png").convert_alpha()
+
 obstacle_rect_list = []
 
+# timer
 obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 900)
+pygame.time.set_timer(obstacle_timer, 2000)
 
 while running:
     # Poll for events
@@ -69,7 +92,19 @@ while running:
             # When player wants to play again by pressing SPACE
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 is_playing = True
-                egg_rect.left = 800
+       
+        #enemy spawn
+        if event.type == obstacle_timer:
+            egg_type = randint(0,4)
+            if egg_type == 0:
+                obstacle_rect_list.append(sugar_surf.get_rect(bottomleft=(randint(8,11)*100, 320)))
+            elif egg_type == 1:
+                obstacle_rect_list.append(egg_surf.get_rect(bottomleft=(randint(8,11)*100, 310)))
+            if egg_type == 2:
+                obstacle_rect_list.append(spoon_surf.get_rect(bottomleft=(randint(8,11)*100, 300)))
+            if egg_type == 3:
+                obstacle_rect_list.append(whisk_surf.get_rect(bottomleft=(randint(8,11)*100, 290)))
+
 
     if is_playing:
         screen.fill("purple")  # Wipe the screen
@@ -79,12 +114,6 @@ while running:
         screen.blit(GROUND_SURF, (0, GROUND_Y))
         score()
 
-        # # Adjust egg's horizontal location then blit it
-        # egg_rect.x -= egg_speed
-        # if egg_rect.right <= 0:
-        #     egg_rect.left = 800
-        # screen.blit(egg_surf, egg_rect)
-
         # Adjust player's vertical location then blit it
         players_gravity_speed += 1
         player_rect.y += players_gravity_speed
@@ -92,15 +121,11 @@ while running:
             player_rect.bottom = GROUND_Y
         screen.blit(player_surf, player_rect)
 
-        # When player collides with enemy, game ends
-        if egg_rect.colliderect(player_rect) and lifes >= 3:
-            lifes -= 1
-        elif lifes <= 0:
-            is_playing = False
+        #obstacle movement
+        obstacle_rect_list = obstacle_movement(obstacle_rect_list)
 
-        #enemy spawn
-        if event.type == obstacle_timer:
-            obstacle_rect_list.append(egg_rect = egg_surf.get_rect(bottomleft=(randint(900,1100), GROUND_Y)))
+        # When player collides with enemy, game ends
+        is_playing = collisions(player_rect, obstacle_rect_list)
 
     # When game is over, display game over message
     else:
@@ -109,6 +134,7 @@ while running:
             event.type == pygame.KEYDOWN
             and event.key == pygame.K_SPACE):
             is_playing = True
+            obstacle_rect_list.clear()
 
 
     # flip the display to put your work on screen
