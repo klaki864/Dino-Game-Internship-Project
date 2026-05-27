@@ -5,6 +5,19 @@ Made by intern: @bassemfarid, no one or nothing else. 🤖
 """
 
 import pygame
+from random import randint
+
+def score():
+    time = pygame.time.get_ticks()
+    score_surf = game_font.render("SCORE:"+str(int(time/5000)), False, "Cyan")
+    score_rect = score_surf.get_rect(center=(400, 50))
+    screen.blit(score_surf, score_rect)
+
+def obstacle_movement(obstacle_list):
+    if obstacle_list:
+        for obstacle_rect in obstacle_list:
+
+
 
 # Initialize Pygame and create a window
 pygame.init()
@@ -20,17 +33,22 @@ players_gravity_speed = 0  # The current speed at which the player falls
 
 # Load level assets
 SKY_SURF = pygame.image.load("graphics/level/sky.png").convert()
-GROUND_SURF = pygame.image.load("graphics/level/ground.png").convert()
+GROUND_SURF = pygame.image.load("graphics/level/floor.png").convert()
+end_surf = pygame.image.load("graphics/level/end.png")
 game_font = pygame.font.Font(pygame.font.get_default_font(), 50)
-score_surf = game_font.render("SCORE?", False, "Black")
-score_rect = score_surf.get_rect(center=(400, 50))
+
 
 # Load sprite assets
-player_surf = pygame.image.load("graphics/player/player_walk_1.png").convert_alpha()
+player_surf = pygame.image.load("graphics/player/horse1.png.png").convert_alpha()
 player_rect = player_surf.get_rect(bottomleft=(25, GROUND_Y))
-egg_surf = pygame.image.load("graphics/egg/egg_1.png").convert_alpha()
+lifes = 3
+egg_surf = pygame.image.load("graphics/egg/baking.png").convert_alpha()
 egg_rect = egg_surf.get_rect(bottomleft=(800, GROUND_Y))
+egg_speed = 5
+obstacle_rect_list = []
 
+obstacle_timer = pygame.USEREVENT + 1
+pygame.time.set_timer(obstacle_timer, 900)
 
 while running:
     # Poll for events
@@ -59,15 +77,13 @@ while running:
         # Blit the level assets
         screen.blit(SKY_SURF, (0, 0))
         screen.blit(GROUND_SURF, (0, GROUND_Y))
-        pygame.draw.rect(screen, "#c0e8ec", score_rect)
-        pygame.draw.rect(screen, "#c0e8ec", score_rect, 10)
-        screen.blit(score_surf, score_rect)
+        score()
 
-        # Adjust egg's horizontal location then blit it
-        egg_rect.x -= 5
-        if egg_rect.right <= 0:
-            egg_rect.left = 800
-        screen.blit(egg_surf, egg_rect)
+        # # Adjust egg's horizontal location then blit it
+        # egg_rect.x -= egg_speed
+        # if egg_rect.right <= 0:
+        #     egg_rect.left = 800
+        # screen.blit(egg_surf, egg_rect)
 
         # Adjust player's vertical location then blit it
         players_gravity_speed += 1
@@ -77,12 +93,23 @@ while running:
         screen.blit(player_surf, player_rect)
 
         # When player collides with enemy, game ends
-        if egg_rect.colliderect(player_rect):
+        if egg_rect.colliderect(player_rect) and lifes >= 3:
+            lifes -= 1
+        elif lifes <= 0:
             is_playing = False
+
+        #enemy spawn
+        if event.type == obstacle_timer:
+            obstacle_rect_list.append(egg_rect = egg_surf.get_rect(bottomleft=(randint(900,1100), GROUND_Y)))
 
     # When game is over, display game over message
     else:
-        screen.fill("black")
+        screen.blit(end_surf, (0,0))
+        if (
+            event.type == pygame.KEYDOWN
+            and event.key == pygame.K_SPACE):
+            is_playing = True
+
 
     # flip the display to put your work on screen
     pygame.display.flip()
