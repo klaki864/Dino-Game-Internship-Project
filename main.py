@@ -70,7 +70,7 @@ def score_display():
     else:
         highscore = False
     file.close()
-    score_surf = game_font.render("SCORE:"+str(score)+" LIVES:"+str(lifes)+" COMBO:"+(combo), False, "Cyan")
+    score_surf = game_font.render("SCORE:"+str(score)+" LIVES:"+str(lifes)+" COMBO:"+str(combo), False, "Cyan")
     score_rect = score_surf.get_rect(center=(400, 50))
     screen.blit(score_surf, score_rect)
 
