@@ -86,10 +86,11 @@ def collisions(player, obstacles):
     return True
 
 def player_animation():
-    global player_surf, horse_number, lifes, spawn_time
+    global player_surf, horse_number, lifes, spawn_time, combo
 
     if horse_normal == True:
         spawn_time = 5000
+        combo = 0
         if horse_number > 1:
             horse_number = 0
         horse_number += 0.6
@@ -129,7 +130,7 @@ while running:
                 if egg_type == 0:
                     obstacle_rect_list.append(sugar_surf.get_rect(bottomleft=(randint(8,10)*100, 320)))
                 if egg_type == 1:
-                    obstacle_rect_list.append(egg_surf.get_rect(bottomleft=(randint(8,10)*100, 310)))
+                    obstacle_rect_list.append(egg_surf.get_rect(bottomleft=(randint(8,10)*100, 190)))
                 if egg_type == 2:
                     obstacle_rect_list.append(spoon_surf.get_rect(bottomleft=(randint(8,10)*100, 300)))
                 if egg_type == 3:
@@ -152,7 +153,7 @@ while running:
 
 
         sky_surf.scroll(randint(-1, 1), randint(-4, 0), pygame.SCROLL_REPEAT)
-        ground_surf.scroll(-9, 0, pygame.SCROLL_REPEAT)
+        ground_surf.scroll(int(-5-(combo*3)), 0, pygame.SCROLL_REPEAT)
 
         # Blit the level assets
         screen.blit(sky_surf, (0, 0))
@@ -173,10 +174,10 @@ while running:
                     #sugar_surf = pygame.transform.rotate(sugar_surf, 5)
                     screen.blit(sugar_surf,obstacle_rect)
                     obstacle_rect.x -= 15
-                elif obstacle_rect.bottom == 310:
+                elif obstacle_rect.bottom == 190:
                     #egg_surf = pygame.transform.rotate(egg_surf, 15)
                     screen.blit(egg_surf,obstacle_rect)
-                    obstacle_rect.x -= 12
+                    obstacle_rect.x -= 25
                 elif obstacle_rect.bottom == 300:
                     #spoon_surf = pygame.transform.rotate(spoon_surf, 10)
                     screen.blit(spoon_surf, obstacle_rect)
