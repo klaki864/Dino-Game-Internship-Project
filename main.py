@@ -70,12 +70,9 @@ def score_display():
     else:
         highscore = False
     file.close()
-    score_surf = game_font.render("SCORE:"+str(score)+" LIVES:"+str(lifes), False, "Cyan")
+    score_surf = game_font.render("SCORE:"+str(score)+" LIVES:"+str(lifes)+" COMBO:"+(combo), False, "Cyan")
     score_rect = score_surf.get_rect(center=(400, 50))
-    combo_surf = game_font.render("SCORE:"+str(combo), False, "Cyan")
-    combo_rect = score_surf.get_rect(center=(400, 150))
     screen.blit(score_surf, score_rect)
-    screen.blit(combo_surf, combo_rect)
 
 def collisions(player, obstacles):
     for obstacle_rect in obstacles:
