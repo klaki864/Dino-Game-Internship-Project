@@ -3,6 +3,7 @@ from random import randint
 start_time = 0
 lifes = 3
 obstacle_score = 0
+music_number = 0
 
 # Initialize Pygame and create a window
 pygame.init()
@@ -23,8 +24,20 @@ sky_surf = pygame.image.load("graphics/level/sky.png").convert()
 ground_surf = pygame.image.load("graphics/level/floor.png").convert()
 end_surf = pygame.image.load("graphics/level/end.png")
 start_surf = pygame.image.load("graphics/level/start.png")
+shape_surf = pygame.image.load("graphics/level/shapeland.png")
+where_surf = pygame.image.load("graphics/level/warehouse.png")
+sunset_surf = pygame.image.load("graphics/level/sunset.png")
+sky = [sky_surf, shape_surf, where_surf, sunset_surf]
+sky_mode = 0
 game_font = pygame.font.Font(pygame.font.get_default_font(), 50)
 
+bakery_music = pygame.mixer.Sound("audio/french.mp3")
+unicorn_music = pygame.mixer.Sound("audio/fairy.mp3")
+intergalactic_music = pygame.mixer.Sound("audio/space.mp3")
+magic_sf = pygame.mixer.Sound("audio/unicorn.mp3")
+whisk_sf = pygame.mixer.Sound("audio/whisk.mp3")
+lifelost_sf = pygame.mixer.Sound("audio/fail.mp3")
+rock_music = pygame.mixer.Sound("audio/cool.mp3")
 
 # Load sprite assets
 horse1 = pygame.image.load("graphics/player/horse1.png.png").convert_alpha()
@@ -47,15 +60,19 @@ magic_rect_list = []
 
 # timer
 obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 1200)
+obstacle_time = 1200
+pygame.time.set_timer(obstacle_timer, obstacle_time)
 
 magic_timer = pygame.USEREVENT + 2
-spawn_time = 5000
+spawn_time = 6000
 combo = 0
 pygame.time.set_timer(magic_timer, spawn_time)
 
 horse_timer = pygame.USEREVENT + 3
 pygame.time.set_timer(horse_timer, 100)
+
+music_timer = pygame.USEREVENT + 4
+pygame.time.set_timer(music_timer, 60000)
 
 def score_display():
     global score
@@ -70,15 +87,31 @@ def score_display():
     else:
         highscore = False
     file.close()
-    score_surf = game_font.render("SCORE:"+str(score)+" LIVES:"+str(lifes)+" COMBO:"+str(combo), False, "Cyan")
+    score_surf = game_font.render("SCORE:"+str(score)+" LIVES:"+str(lifes)+" COMBO:"+str(combo), False, "Blue")
     score_rect = score_surf.get_rect(center=(400, 50))
     screen.blit(score_surf, score_rect)
+
+def choose_music():
+    global music_number
+    music_number = randint(0,2)
+    if music_number == 0:
+        bakery_music.play(loops = -1)
+    elif music_number == 1:
+        intergalactic_music.play(loops = -1)
+    elif music_number == 2:
+        unicorn_music.play(loops = -1)
+    elif music_number == 3:
+        rock_music.play(loops = -1)
+
 
 def collisions(player, obstacles):
     for obstacle_rect in obstacles:
         if obstacle_rect.colliderect(player):
+            lifelost_sf.play()
             global lifes, horse_normal
             lifes -= 1
+            if lifes >= 5:
+                lifes = 5
             horse_normal = True
             obstacles.remove(obstacle_rect)
             if lifes <= 0:
@@ -89,7 +122,7 @@ def player_animation():
     global player_surf, horse_number, lifes, spawn_time, combo
 
     if horse_normal == True:
-        spawn_time = 5000
+        spawn_time = 6000
         combo = 0
         if horse_number > 1:
             horse_number = 0
@@ -113,7 +146,7 @@ while running:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE or event.type == pygame.MOUSEBUTTONDOWN:
                 menu = False
                 playing = True
-
+                choose_music()
         elif is_playing:
             if event.type == horse_timer:
                 player_animation()
@@ -135,14 +168,20 @@ while running:
                     obstacle_rect_list.append(spoon_surf.get_rect(bottomleft=(randint(8,10)*100, 300)))
                 if egg_type == 3:
                     obstacle_rect_list.append(whisk_surf.get_rect(bottomleft=(randint(8,10)*100, 290)))
+                    whisk_sf.play()
             
             if event.type == magic_timer:
                 magic_rect_list.append(magic_surf.get_rect(bottomleft = (randint(8,10)*100, 312)))
+            
+            if event.type == music_timer:
+                pygame.mixer.pause()
+                choose_music()
         
         else:
             screen.blit(start_surf, (0, 0))
             # When player wants to play again by pressing SPACE
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                choose_music()
                 is_playing = True
        
     if menu:
@@ -151,13 +190,27 @@ while running:
     elif is_playing:
         screen.fill("purple")  # Wipe the screen
 
+        score_display()
 
-        sky_surf.scroll(randint(-1, 1), randint(-4, 0), pygame.SCROLL_REPEAT)
+        if score > 50 and score < 100 and horse_normal == False:
+            sky_mode = 2
+        elif horse_normal == True and score < 50:
+            sky_mode = 0
+        elif score > 100 and score < 200 and horse_normal == False:
+            sky_mode = 3
+        elif score >  200 and horse_normal == False:
+            sky_mode = 1
+
+        sky[sky_mode].scroll(randint(-4, 0), randint(-1, 1), pygame.SCROLL_REPEAT)
         ground_surf.scroll(int(-5-(combo*3)), 0, pygame.SCROLL_REPEAT)
 
         # Blit the level assets
-        screen.blit(sky_surf, (0, 0))
+        screen.blit(sky[sky_mode], (0, 0))
         screen.blit(ground_surf, (0, GROUND_Y))
+
+        score_display()
+        obstacle_time -= score*10
+
 
         # Adjust player's vertical location then blit it
         players_gravity_speed += 0.75
@@ -173,29 +226,31 @@ while running:
                 if obstacle_rect.bottom == 320:
                     #sugar_surf = pygame.transform.rotate(sugar_surf, 5)
                     screen.blit(sugar_surf,obstacle_rect)
-                    obstacle_rect.x -= 15
+                    obstacle_rect.x -= int(15+combo*2+score/3)
                 elif obstacle_rect.bottom == 190:
                     #egg_surf = pygame.transform.rotate(egg_surf, 15)
                     screen.blit(egg_surf,obstacle_rect)
-                    obstacle_rect.x -= 25
+                    obstacle_rect.x -= int(23+combo*2+score/3)
                 elif obstacle_rect.bottom == 300:
                     #spoon_surf = pygame.transform.rotate(spoon_surf, 10)
                     screen.blit(spoon_surf, obstacle_rect)
-                    obstacle_rect.x -= 7
+                    obstacle_rect.x -= int(7+combo*2+score/3)
                 else:
                     #whisk_surf = pygame.transform.rotate(whisk_surf, randint(-1, 5)*5)
                     screen.blit(whisk_surf, obstacle_rect)
-                    obstacle_rect.x -= randint(-1, 4)*4
+                    obstacle_rect.x -= int(randint(-1, 6)*4+combo*2+score/randint(1, 3))
             obstacle_rect_list = [obstacle for obstacle in obstacle_rect_list if obstacle.x > -100]
         else:
             obstacle_rect_list = []
         obstacle_score += len(obstacle_rect_list)
-        score_display()
+
+        
+        
 
         if magic_rect_list:
             for magic_rect in magic_rect_list:
                 screen.blit(magic_surf, magic_rect)
-                magic_rect.x -= 12
+                magic_rect.x -= 10
                 magic_rect_list = [magic for magic in magic_rect_list if magic.x > -100]
         else: magic_rect_list = []
 
@@ -205,8 +260,11 @@ while running:
 
         for magic_rect in magic_rect_list:
             if player_rect.colliderect(magic_rect):
+                magic_sf.play()
                 horse_normal = False
-                spawn_time -= 1000
+                spawn_time -= 999
+                if spawn_time < 200:
+                    spawn_time = 0
                 combo += 1
                 horse_number = 2
                 lifes += 1
@@ -224,7 +282,10 @@ while running:
         screen.blit(highscore_surf, highscore_rect)
         obstacle_rect_list.clear()
         lifes = 3
+        obstacle_time = 1200
         start_time = pygame.time.get_ticks()
+        pygame.mixer.pause()
+        choose_music()
         file = open("highscore.txt", "w")
         file.write(str(current_hs))
         file.close()
