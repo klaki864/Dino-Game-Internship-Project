@@ -27,9 +27,9 @@ start_surf = pygame.image.load("graphics/level/start.png")
 shape_surf = pygame.image.load("graphics/level/shapeland.png")
 where_surf = pygame.image.load("graphics/level/warehouse.png")
 sunset_surf = pygame.image.load("graphics/level/sunset.png")
-sky = [sky_surf, shape_surf, where_surf, sunset_surf]
+sky = [sky_surf, where_surf, sunset_surf]
 sky_mode = 0
-game_font = pygame.font.Font(pygame.font.get_default_font(), 50)
+game_font = pygame.font.Font("font/ugly.ttf", 30)
 
 bakery_music = pygame.mixer.Sound("audio/french.mp3")
 unicorn_music = pygame.mixer.Sound("audio/fairy.mp3")
@@ -38,6 +38,12 @@ magic_sf = pygame.mixer.Sound("audio/unicorn.mp3")
 whisk_sf = pygame.mixer.Sound("audio/whisk.mp3")
 lifelost_sf = pygame.mixer.Sound("audio/fail.mp3")
 rock_music = pygame.mixer.Sound("audio/cool.mp3")
+fantasy_music = pygame.mixer.Sound("audio/epic.mp3")
+cat_music = pygame.mixer.Sound("audio/fatcat.mp3")
+groovy_music = pygame.mixer.Sound("audio/groovy.mp3")
+fresh_music = pygame.mixer.Sound("audio/guitar.mp3")
+kahoot_music = pygame.mixer.Sound("audio/kahoot.mp3")
+music_list = [bakery_music, unicorn_music, intergalactic_music, rock_music, fantasy_music, groovy_music, fresh_music, kahoot_music]
 
 # Load sprite assets
 horse1 = pygame.image.load("graphics/player/horse1.png.png").convert_alpha()
@@ -72,7 +78,7 @@ horse_timer = pygame.USEREVENT + 3
 pygame.time.set_timer(horse_timer, 100)
 
 music_timer = pygame.USEREVENT + 4
-pygame.time.set_timer(music_timer, 60000)
+pygame.time.set_timer(music_timer, 50000)
 
 def score_display():
     global score
@@ -93,15 +99,8 @@ def score_display():
 
 def choose_music():
     global music_number
-    music_number = randint(0,2)
-    if music_number == 0:
-        bakery_music.play(loops = -1)
-    elif music_number == 1:
-        intergalactic_music.play(loops = -1)
-    elif music_number == 2:
-        unicorn_music.play(loops = -1)
-    elif music_number == 3:
-        rock_music.play(loops = -1)
+    music_number = randint(0,7)
+    music_list[music_number].play(loops = -1)
 
 
 def collisions(player, obstacles):
@@ -110,7 +109,7 @@ def collisions(player, obstacles):
             lifelost_sf.play()
             global lifes, horse_normal
             lifes -= 1
-            if lifes >= 5:
+            if lifes > 4:
                 lifes = 5
             horse_normal = True
             obstacles.remove(obstacle_rect)
@@ -194,12 +193,12 @@ while running:
 
         if score > 50 and score < 100 and horse_normal == False:
             sky_mode = 2
-        elif horse_normal == True and score < 50:
+        elif horse_normal == True and score < 30:
             sky_mode = 0
-        elif score > 100 and score < 200 and horse_normal == False:
-            sky_mode = 3
-        elif score >  200 and horse_normal == False:
+        elif score > 30 and score < 50 and horse_normal == False:
             sky_mode = 1
+        elif score > 50 and horse_normal == False:
+            sky_mode = 0
 
         sky[sky_mode].scroll(randint(-4, 0), randint(-1, 1), pygame.SCROLL_REPEAT)
         ground_surf.scroll(int(-5-(combo*3)), 0, pygame.SCROLL_REPEAT)
@@ -226,19 +225,19 @@ while running:
                 if obstacle_rect.bottom == 320:
                     #sugar_surf = pygame.transform.rotate(sugar_surf, 5)
                     screen.blit(sugar_surf,obstacle_rect)
-                    obstacle_rect.x -= int(15+combo*2+score/3)
+                    obstacle_rect.x -= int(15+combo*2+score/5)
                 elif obstacle_rect.bottom == 190:
                     #egg_surf = pygame.transform.rotate(egg_surf, 15)
                     screen.blit(egg_surf,obstacle_rect)
-                    obstacle_rect.x -= int(23+combo*2+score/3)
+                    obstacle_rect.x -= int(23+combo*2+score/5)
                 elif obstacle_rect.bottom == 300:
                     #spoon_surf = pygame.transform.rotate(spoon_surf, 10)
                     screen.blit(spoon_surf, obstacle_rect)
-                    obstacle_rect.x -= int(7+combo*2+score/3)
+                    obstacle_rect.x -= int(7+combo*2+score/5)
                 else:
                     #whisk_surf = pygame.transform.rotate(whisk_surf, randint(-1, 5)*5)
                     screen.blit(whisk_surf, obstacle_rect)
-                    obstacle_rect.x -= int(randint(-1, 6)*4+combo*2+score/randint(1, 3))
+                    obstacle_rect.x -= int(randint(-1, 6)*4+combo*2+score/int(randint(1,4)))
             obstacle_rect_list = [obstacle for obstacle in obstacle_rect_list if obstacle.x > -100]
         else:
             obstacle_rect_list = []
@@ -285,7 +284,6 @@ while running:
         obstacle_time = 1200
         start_time = pygame.time.get_ticks()
         pygame.mixer.pause()
-        choose_music()
         file = open("highscore.txt", "w")
         file.write(str(current_hs))
         file.close()
