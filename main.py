@@ -4,6 +4,7 @@ start_time = 0
 lifes = 3
 obstacle_score = 0
 music_number = 0
+hat_number = 0
 
 # Initialize Pygame and create a window
 pygame.init()
@@ -31,6 +32,13 @@ sky = [sky_surf, where_surf, sunset_surf]
 sky_mode = 0
 game_font = pygame.font.Font("font/ugly.ttf", 30)
 
+top_hat = pygame.image.load("graphics/hats/top.png")
+top_HAT = pygame.transform(top_hat, 40)
+safety_hat = pygame.image.load("graphics/hats/construction.png")
+party_hat = pygame.image.load("graphics/hats/crazy.png")
+hat_list = [top_HAT, safety_hat, party_hat]
+hat_rect = hat_list[hat_number].get_rect(bottomright = (125, GROUND_Y+100))
+
 bakery_music = pygame.mixer.Sound("audio/french.mp3")
 unicorn_music = pygame.mixer.Sound("audio/fairy.mp3")
 intergalactic_music = pygame.mixer.Sound("audio/space.mp3")
@@ -44,6 +52,7 @@ groovy_music = pygame.mixer.Sound("audio/groovy.mp3")
 fresh_music = pygame.mixer.Sound("audio/guitar.mp3")
 kahoot_music = pygame.mixer.Sound("audio/kahoot.mp3")
 music_list = [bakery_music, unicorn_music, intergalactic_music, rock_music, fantasy_music, groovy_music, fresh_music, kahoot_music]
+whisk_sf.set_volume(0.6)
 
 # Load sprite assets
 horse1 = pygame.image.load("graphics/player/horse1.png.png").convert_alpha()
@@ -193,11 +202,11 @@ while running:
 
         if score > 50 and score < 100 and horse_normal == False:
             sky_mode = 2
-        elif horse_normal == True and score < 30:
+        elif horse_normal == True and score < current_hs:
             sky_mode = 0
-        elif score > 30 and score < 50 and horse_normal == False:
+        elif score > current_hs/2 and score < current_hs and horse_normal == False:
             sky_mode = 1
-        elif score > 50 and horse_normal == False:
+        elif score > current_hs and horse_normal == False:
             sky_mode = 0
 
         sky[sky_mode].scroll(randint(-4, 0), randint(-1, 1), pygame.SCROLL_REPEAT)
@@ -217,6 +226,7 @@ while running:
         if player_rect.bottom > GROUND_Y:
             player_rect.bottom = GROUND_Y
         screen.blit(player_surf, player_rect)
+        screen.blit(hat_list[hat_number], hat_rect)
 
         #obstacle movement
         # obstacle_rect_list = obstacle_movement(obstacle_rect_list, sugar_surf)
@@ -237,7 +247,7 @@ while running:
                 else:
                     #whisk_surf = pygame.transform.rotate(whisk_surf, randint(-1, 5)*5)
                     screen.blit(whisk_surf, obstacle_rect)
-                    obstacle_rect.x -= int(randint(-1, 6)*4+combo*2+score/int(randint(1,4)))
+                    obstacle_rect.x -= int(randint(-2, 4)*4+combo*2+score/int(randint(1,4)))
             obstacle_rect_list = [obstacle for obstacle in obstacle_rect_list if obstacle.x > -100]
         else:
             obstacle_rect_list = []
