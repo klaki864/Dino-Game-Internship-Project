@@ -32,12 +32,12 @@ sky = [sky_surf, where_surf, sunset_surf]
 sky_mode = 0
 game_font = pygame.font.Font("font/ugly.ttf", 30)
 
-top_hat = pygame.image.load("graphics/hats/top.png")
-top_HAT = pygame.transform(top_hat, 40)
-safety_hat = pygame.image.load("graphics/hats/construction.png")
-party_hat = pygame.image.load("graphics/hats/crazy.png")
-hat_list = [top_HAT, safety_hat, party_hat]
-hat_rect = hat_list[hat_number].get_rect(bottomright = (125, GROUND_Y+100))
+# top_hat = pygame.image.load("graphics/hats/top.png")
+# # top_HAT = pygame.transform(top_hat, 40)
+# safety_hat = pygame.image.load("graphics/hats/construction.png")
+# party_hat = pygame.image.load("graphics/hats/crazy.png")
+# hat_list = [top_HAT, safety_hat, party_hat]
+# hat_rect = hat_list[hat_number].get_rect(bottomright = (125, GROUND_Y+100))
 
 bakery_music = pygame.mixer.Sound("audio/french.mp3")
 unicorn_music = pygame.mixer.Sound("audio/fairy.mp3")
@@ -226,7 +226,7 @@ while running:
         if player_rect.bottom > GROUND_Y:
             player_rect.bottom = GROUND_Y
         screen.blit(player_surf, player_rect)
-        screen.blit(hat_list[hat_number], hat_rect)
+        # screen.blit(hat_list[hat_number], hat_rect)
 
         #obstacle movement
         # obstacle_rect_list = obstacle_movement(obstacle_rect_list, sugar_surf)
